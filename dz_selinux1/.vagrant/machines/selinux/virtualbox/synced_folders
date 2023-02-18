@@ -1,0 +1,1 @@
+{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"/hdd/hdd2/DZ_OTUS/dz_selinux2","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}
