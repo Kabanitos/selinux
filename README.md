@@ -2,25 +2,37 @@
 ### Способ 1 
 #### Разрешим в SELinux работу nginx на порту TCP 4881 c помощью переключателей setsebool
 Проверим, что в ОС отключен файервол **systemctl status firewalld**
-(/image/selinux1.png)
+
+![Image alt](/image/selinux1.png)
+
 Проверяем, что  конфигурация nginx  настроена без ошибок: **nginx -t**
-(/image/selinux2.png)
+
+![Image alt](/image/selinux2.png)
+
 Проверяем режим работы SELinux: **getenforce**
-(/image/selinux3.png)
+
+![Image alt](/image/selinux3.png)
+
 Режим **Enforcing** означает, что SELinux будет блокировать запрещенную активность
 __Разрешим в SELinux работу nginx на порту TCP 4881 c помощью переключателей setsebool__
 Находим в логах (/var/log/audit/audit.log) информацию о блокировании порта
-(/image/selinux4.png)
+
+![Image alt](/image/selinux4.png)
+
 В ОС отсутствует **audit2why**, его необходимо установить, устанавливаем  пакет **policycoreutils-python**
 ```
 yum install policycoreutils-python
 ```
 
 Копируем время, в которое был записан этот лог, и, с помощью утилиты audit2why смотрим информации о запрете: **grep 1676738964.624:1491 /var/log/audit/audit.log | audit2why**
-(/image/selinux5.png)
+
+![Image alt](/image/selinux5.png)
+
 Из вывода утилиты **audit2why**  необходимо поменять параметр **nis_enabled**
 Включаем параметр nis_enabled и перезапустим nginx: **setsebool -P nis_enabled on**
-(/image/selinux6.png)
+
+![Image alt](/image/selinux6.png)
+
 Проверим статус параметра **nis_enabled**
 ```
 [root@selinux vagrant]# getsebool -a | grep nis_enabled
@@ -29,11 +41,17 @@ nis_enabled --> on
 ### Способ 2
 #### Теперь разрешим в SELinux работу nginx на порту TCP 4881 c помощью добавления нестандартного порта в имеющийся тип:
 Поиск имеющегося типа, для http трафика: **semanage port -l | grep http**
-(/image/selinux7.png)
+
+![Image alt](/image/selinux7.png)
+
 Добавим порт в тип http_port_t: **semanage port -a -t http_port_t -p tcp 4881** , проверяем порт **semanage port -l | grep http** и перещапускаем службу nginx **systemctl restart nginx**
-(/image/selinux8.png)
+
+![Image alt](/image/selinux8.png)
+
 Удалить нестандартный порт из имеющегося типа можно с помощью команды: **semanage port -d -t http_port_t -p tcp 4881**
-(/image/selinux9.png)
+
+![Image alt](/image/selinux9.png)
+
 ### Способ 3
 #### Разрешим в SELinux работу nginx на порту TCP 4881 c помощью формирования и установки модуля SELinux:
 Запустим nginx **systemctl start nginx**
@@ -50,7 +68,8 @@ type=SERVICE_START msg=audit(1676738964.639:1492): pid=1 uid=0 auid=4294967295 s
 ```
 Воспользуемся утилитой **audit2allow** для того, чтобы на основе логов SELinux сделать модуль, разрешающий работу nginx на нестандартном порту: 
 **grep nginx /var/log/audit/audit.log | audit2allow -M nginx**
-(/image/selinux10.png)
+
+![Image alt](/image/selinux10.png)
 
 Audit2allow сформировал модуль, и сообщил нам команду, с помощью которой можно применить данный модуль: **semodule -i nginx.pp**
 ```
