@@ -105,6 +105,6 @@ libsemanage.semanage_direct_remove_key: Removing last nginx module (no other ngi
 
 
 
-#### SELinux: проблема с удаленным обновлением зоны DNS
+# SELinux: проблема с удаленным обновлением зоны DNS
 
 
